@@ -12,28 +12,20 @@ const App = () => {
   const [password, setPassword] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [clicks, setClicks] = useState(0);
-  const [lastClickTime, setLastClickTime] = useState(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    // localStorage'dan tıklama verisini ve son tıklama zamanını al
+    // localStorage'dan tıklama verisini al
     const storedClicks = localStorage.getItem('clicks');
-    const storedLastClick = localStorage.getItem('lastClickTime');
-    
     if (storedClicks) {
       setClicks(Number(storedClicks));
-    }
-    
-    if (storedLastClick) {
-      setLastClickTime(Number(storedLastClick));
     }
   }, []);
 
   useEffect(() => {
     // Her değişiklikte veriyi localStorage'a kaydet
     localStorage.setItem('clicks', clicks);
-    localStorage.setItem('lastClickTime', lastClickTime);
-  }, [clicks, lastClickTime]);
+  }, [clicks]);
 
   const handleLogin = () => {
     if (username === userCredentials.username && password === userCredentials.password) {
@@ -52,30 +44,12 @@ const App = () => {
   };
 
   const handleClickHeart = () => {
-    const currentTime = Date.now();
-    const timeElapsed = currentTime - lastClickTime;
-
-    // Eğer 24 saatten fazla zaman geçtiyse, kalp sıfırlanır
-    if (timeElapsed > 24 * 60 * 60 * 1000) {
-      setClicks(0);
-      setMessage("Kalp kırıldı! Yeniden tıklamak için 24 saat bekleyin.");
-      return;
-    }
-
-    // 12 saat beklemesi gerekiyorsa, uyarı ver
-    if (timeElapsed < 12 * 60 * 60 * 1000 && clicks >= 10) {
-      setMessage("Bugün yeterince sevgi alındı. Lütfen 12 saat bekleyin.");
-      return;
-    }
-
-    // Eğer tıklama sayısı 10'a ulaşmamışsa, tıklama yapılabilir
+    // Eğer tıklama sayısı 10'a ulaştıysa, uyarı ver
     if (clicks < 10) {
       setClicks(prev => prev + 1);
-      setLastClickTime(currentTime);
-      setMessage("");
+      setMessage("");  // Mesajı temizle
     }
 
-    // Eğer tıklama sayısı 10'a ulaştıysa, uyarı ver
     if (clicks === 9) {
       setMessage("Bugün yeterince sevgi alındı, 12 saat sonra tekrar gelin.");
     }
@@ -105,7 +79,7 @@ const App = () => {
           <h2>Hoş geldiniz, {username}</h2>
           <button onClick={handleLogout}>Çıkış Yap</button>
           <div className="heart-container">
-            <button className="heart-button" onClick={handleClickHeart}>
+            <button className="heart-button" onClick={handleClickHeart} disabled={clicks >= 10}>
               ❤️
             </button>
             <p className="clicks-count">{clicks} / 10</p>
